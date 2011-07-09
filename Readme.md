@@ -42,7 +42,7 @@ _Concise Cloud MVC Framework for **node.js**_
 
 ## Tour
 
-<iframe width="560" height="349" src="http://www.youtube.com/embed/4YrsIzLZbbs" frameborder="0" allowfullscreen></iframe>
+Watch the video [here](http://youtu.be/4YrsIzLZbbs).
 
 ## License 
 
