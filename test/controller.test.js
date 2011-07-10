@@ -6,7 +6,7 @@ var vows     = require('vows'),
 	_		 = require('underscore');
 
 // hide debug
-hive.config.debug = false;
+hive.config.debug = true;
 
 // macro for route tests
 function routeMacro(opt) {

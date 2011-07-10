@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
 require('../lib/util/cli');
-
 var hive = require('../index'),
 	config = require('../lib/config'),
 	_ = require('underscore'),
 	options = {},
 	debug = false,
 	inspector = false,
-	spawn = require('child_process').spawn,
+	repl,
+	postBoot = [],
+	child_proccess = require('child_process'),
+	exec = child_proccess.exec,
+	spawn = child_proccess.spawn,
 	hiveART = ''        +
  ' _   _         \r\n'  +
  '| |_|_|_ _ ___ \r\n'  +
@@ -18,7 +21,6 @@ var hive = require('../index'),
 
 GLOBAL.inflection = require('../lib/util/inflection');
 GLOBAL.guid = require('../lib/util/guid');
-
 // hide logs
 hive.config.debug = false;
 
@@ -119,57 +121,79 @@ function project(name) {
 
 }
 
-var child;
+var child, telnet;
 function boot(callback) {
-	var args = ['index.js'];
-	if(debug) {
-		args = ['--debug', 'index.js'];
-		if(inspector) {
-			postBoot.push(function() {
-				var nodeInspector = spawn('node-inspector');
-				nodeInspector.stdout.on('data', function(data) {
-					data = data.toString();
-					var url = data.match(/http\S+/g);
-					if(url && url[0]) {
-						spawn('open', [url[0]]);
-					}
-					cli
-					.write('[')
-					.color('cyan')
-					.write('node-inspector')
-					.color('white')
-					.write(']\n\t')
-					.write(data.toString());
+	
+	// get configuration
+	config(process.env.PWD, function (settings) {
+		var args = ['index.js'];
+		if(debug) {
+			args = ['--debug', 'index.js'];
+			if(inspector) {
+				postBoot.push(function() {
+					var nodeInspector = spawn('node-inspector');
+					nodeInspector.stdout.on('data', function(data) {
+						data = data.toString();
+						var url = data.match(/http\S+/g);
+						if(url && url[0]) {
+							spawn('open', [url[0]]);
+						}
+						cli
+						.write('[')
+						.color('cyan')
+						.write('node-inspector')
+						.color('white')
+						.write(']\n\t')
+						.write(data.toString());
+					});
 				});
-			});
+			}
 		}
-	}
-	child = spawn('node', args);
-	child.stdout.pipe(process.stdout, { end: false });
-	var started = false;
-	child.stdout.on('data', function (data) {
-		if(!started && typeof callback === 'function' && data.toString().indexOf('http://') > -1) {
-			started = true;
-			callback();
-		}
-	});
-	child.on('exit', function (code, signal) {
-		if(signal < 4) {
-			console.log('Hive server shutdown with:', {code: code, signal: signal});
-			process.kill(signal);
+		if(settings.clusterize) {
+			// run a cluster
+			child = exec('node ' + args.join(' '));
+			// open repl
+			if(settings.clusterize.repl || repl) {
+				postBoot.push(function() {
+					telnet = exec('telnet ' + (settings.host || 'localhost') + ' ' + settings.clusterize.repl || 8888);
+					var name = settings.name || 'hive';
+					telnet.stdout.on('data', function(data) {
+						var o = data.toString().replace('cluster>', name + '>');
+						cli.write(o);
+					});
+					process.stdin.pipe(telnet.stdin);
+					process.stdin.resume();
+				});
+			}
 		} else {
-			process.nextTick(boot);
+			// run in proc
+			child = spawn('node', args);
 		}
-	});
+		child.stdout.pipe(process.stdout, { end: false });
+		var started = false;
+		child.stdout.on('data', function (data) {
+			if(!started && typeof callback === 'function' && data.toString().indexOf('http://') > -1) {
+				started = true;
+				callback();
+			}
+		});
+		child.on('exit', function (code, signal) {
+			if(signal < 4) {
+				console.log('Hive server shutdown with:', {code: code, signal: signal});
+				process.kill(signal);
+			} else {
+				process.nextTick(boot);
+			}
+		});
+    });
 }
 
-var postBoot = [];
 function preview(browser) {
 	config(process.env.PWD, function (settings) {
 		// preview in chrome
+		_.extend(settings, hive.config);
 		var url = 'http://' + hive.config.host + ':' + hive.config.port;
 		url = url.replace(':80', '');
-		_.extend(settings, hive.config);
 		postBoot.push(function () {
 			spawn(browser, [url]);
 		});
@@ -215,11 +239,17 @@ var flags = {
 	'-db': function() {
 		spawn('mongod');
 	},
-	'-debug': function() {
+	'--debug': function() {
 		debug = true;
+		repl = true;
 	},
 	'-i': function() {
+		debug = true;
 		inspector = true;
+		repl = true;
+	},
+	'-r': function() {
+		repl = true;
 	}
 };
 
@@ -247,6 +277,7 @@ function loop(inputs) {
 	
 	// if no commands have been run, boot
 	if(!commandsRun) {
+		
 		boot(function() {
 			postBoot.forEach(function (func) {
 				func();

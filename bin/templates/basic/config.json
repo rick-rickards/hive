@@ -12,5 +12,9 @@
     "view": {
       "extension": ".haml",
       "module": "hamljs"
-    }
+    },
+	"clusterize": {
+		"repl": 8888,
+		"reload": true
+	}
 }
