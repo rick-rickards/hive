@@ -44,6 +44,12 @@ _Concise Cloud MVC Framework for **node.js**_
 
 <iframe width="560" height="349" src="http://www.youtube.com/embed/4YrsIzLZbbs" frameborder="0" allowfullscreen></iframe>
 
+## Installing for Development
+
+* Fork this repo and clone it into ```~/node-modules/hive```
+* In the repo install the dependencies with ```npm install -g```
+* Run the tests in the test folder with ```vows *.js --spec```
+
 ## License 
 
 **MIT License**
