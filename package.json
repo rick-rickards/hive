@@ -9,7 +9,7 @@
         }
     ],
     "dependencies":{
-        "express":">= 2.0.0",
+    "express":">= 2.0.0",
 		"backbone":">= 0.3.0",
 		"mongoose":">= 1.0.0",
 		"findit": ">= 0.0.3",
@@ -20,7 +20,6 @@
 		"connect-form": ">= 0.2.1",
 		"hamljs": ">= 0.5.1",
 		"forever": ">= 0.4.0"
-		
     },
     "keywords":["framework"],
     "repository":"git://github.com/ritch/hive",
