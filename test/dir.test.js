@@ -4,7 +4,7 @@ var vows   = require('vows'),
     assert = require('assert');
 
 // directory behavior
-vows.describe('file').addBatch({
+vows.describe('dir').addBatch({
 	
     'When a new directory': {
         topic: new hive.Dir({path: './assets/test'}),
@@ -84,8 +84,7 @@ vows.describe('file').addBatch({
 				var _self = this;
 				dir.destroy();
 				dir.ready(function() {
-					fs.lstat(dir.absolute(), function(err, stat) {
-						console.log(dir.absolute(), err, stat);
+					fs.lstat(dir.absolute(), function(stat) {
 						_self.callback(null, stat && stat.message);
 					});
 				});
