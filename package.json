@@ -1,7 +1,7 @@
 {
     "name":"hive",
-    "description":"Intuitive development framework for all sorts of types of node apps",
-    "version":"0.1.5",
+    "description":"MVC for modern web and mobile apps",
+    "version":"0.1.6",
     "author":"Ritchie Martori",
     "contributors":[{
             "name":"Ritchie Martori",

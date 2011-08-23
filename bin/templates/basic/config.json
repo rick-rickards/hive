@@ -10,7 +10,7 @@
       "secret": "[%= guid.new() %]"
     },
     "view": {
-      "extension": ".haml",
-      "module": "hamljs"
+      "extension": ".ejs",
+      "module": "ejs"
     }
 }
